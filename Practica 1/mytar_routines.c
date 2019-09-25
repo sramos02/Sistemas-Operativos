@@ -39,22 +39,22 @@ int copynFile(FILE * origin, FILE * destination, int nBytes) {
  * Returns: !=NULL if success, NULL if error
  */
 char* loadstr(FILE * file) {
-	char* cadena;
+	char* string = NULL;
 	int tam = 1; //Por el '\0'
 
+	//get tam of the array
 	while(getc(file)) != (int)'\0') tam++;
+	if (tam != 1) {
+		string = malloc(tam);
+		fseek(file, -tam, SEEK_CUR);
 
-	cadena = malloc(tam);
-	fseek(file, -tam, SEEK_CUR);
+		//copy the string
+		for(int i = 0; tam; i++){
+			string[i] = (char)getc(file);	
+			tam--;
 
-	while(tam){
-		cadena[i] = (char)getc(file);	
-		tam--;
 	}
-
-	return cadena;
-
-	return NULL;
+	return string;
 }
 
 /** Read tarball header and store it in memory.
@@ -67,8 +67,16 @@ char* loadstr(FILE * file) {
  * the (name,size) pairs read from the tar file. Upon failure, the function returns NULL.
  */
 stHeaderEntry* readHeader(FILE * tarFile, int *nFiles) {
-	// Complete the function
-	return NULL;
+	stHeaderEntry * header = NULL;
+
+	if(fread(nFiles, sizeof(int), 1, tarFile) == 1) {
+		header = malloc(sizeof(stHeaderEntry * nFiles));
+		for(int i = 0; i < nFiles; ++i){
+			header[i].name = loadstr(tarFile);
+ 			fread(header[i].size, sizeof(int), 1, tarFile);
+		}
+	}
+	return header;
 }
 
 /** Creates a tarball archive 
@@ -93,7 +101,17 @@ stHeaderEntry* readHeader(FILE * tarFile, int *nFiles) {
  *
  */
 int createTar(int nFiles, char *fileNames[], char tarName[]) {
-	// Complete the function
+	int sizeHeader = 0;
+
+	//Calc the room needed for the header
+	for(int i = 0; i < nFiles; ++i)
+		sizeHeader += strlen(fileNames[i] + 1);
+
+	//Move the file's position indicator to the data section
+	FILE * tarFile = fopen(tarName, 'w');
+	
+	//Dump the contest of the source files (one by one)
+	
 	return EXIT_FAILURE;
 }
 
