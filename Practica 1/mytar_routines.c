@@ -101,16 +101,24 @@ stHeaderEntry* readHeader(FILE * tarFile, int *nFiles) {
  *
  */
 int createTar(int nFiles, char *fileNames[], char tarName[]) {
-	int sizeHeader = 0;
+	int sizeHeader = sizeof(int);
 
 	//Calc the room needed for the header
-	for(int i = 0; i < nFiles; ++i)
-		sizeHeader += strlen(fileNames[i] + 1);
+	for(int i = 0; i < nFiles; ++i) sizeHeader += strlen(fileNames[i] + 1);
 
 	//Move the file's position indicator to the data section
 	FILE * tarFile = fopen(tarName, 'w');
-	
+	fseek(tarFile,sizeHeader,SEEK_SET);
 	//Dump the contest of the source files (one by one)
+	FILE * file; char buff;
+	for(int i = 0; i < nFiles; ++i){
+		file = fopen(fileNames[i]);
+		while(feof(file)== 0){
+			fread(buff,1,1,file);
+			fwrite(buff,1,1,tarFile);
+		}
+		fclose(file);
+	}
 	
 	return EXIT_FAILURE;
 }
