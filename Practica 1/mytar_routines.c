@@ -18,13 +18,14 @@ int copynFile(FILE * origin, FILE * destination, int nBytes) {
 	int ret, c;
 	int sum = 0;
 
+  if(origin == NULL || destination == NULL) return -1;
+
 	while((c = getc(origin)) != EOF){
 		ret = putc((unsigned char) c, destination);
-		if(ret == EOF) return -1;
 		else sum++;		
 	}	
-	if(c == EOF) return -1;
-	else return sum;
+  
+  return sum;
 }
 
 /** Loads a string from a file.
@@ -102,25 +103,38 @@ stHeaderEntry* readHeader(FILE * tarFile, int *nFiles) {
  */
 int createTar(int nFiles, char *fileNames[], char tarName[]) {
 	int sizeHeader = sizeof(int);
+	
+	FILE * tarFile = NULL;
+	
+	//If the file exists then continue, else return error
+	tarFile = fopen(tarName, "w");
+	if (tarFile == NULL) return EXIT_FAILURE;
 
 	//Calc the room needed for the header
 	for(int i = 0; i < nFiles; ++i) sizeHeader += strlen(fileNames[i] + 1);
 
-	//Move the file's position indicator to the data section
-	FILE * tarFile = fopen(tarName, 'w');
-	fseek(tarFile,sizeHeader,SEEK_SET);
-	//Dump the contest of the source files (one by one)
-	FILE * file; char buff;
-	for(int i = 0; i < nFiles; ++i){
-		file = fopen(fileNames[i]);
-		while(feof(file)== 0){
-			fread(buff,1,1,file);
-			fwrite(buff,1,1,tarFile);
-		}
+		//Move the file's position indicator to the data section
+		fseek(tarFile,sizeHeader,SEEK_SET);
+		
+		//Dump the contest of the source files (one by one)
+		FILE * file = NULL;
+		char buff;
+		
+		for(int i = 0; i < nFiles; ++i){
+			file = fopen(fileNames[i]);
+			if (file == NULL) return EXIT_FAILURE;
+			
+			while(feof(file)== 0){
+				fread(buff,1,1,file);
+				fwrite(buff,1,1,tarFile);
+			}	
+			
 		fclose(file);
+		}
 	}
-	
-	return EXIT_FAILURE;
+
+	fclose(tarFile);
+	return EXIT_SUCCESS;
 }
 
 /** Extract files stored in a tarball archive
@@ -138,6 +152,28 @@ int createTar(int nFiles, char *fileNames[], char tarName[]) {
  *
  */
 int extractTar(char tarName[]) {
-	// Complete the function
-	return EXIT_FAILURE;
+	FILE * tarFile = NULL;
+	FILE * outFile = NULL;
+	
+	stdHeaderEntry * ent = NULL;
+	int numFiles = 0;
+	int nCop = 0;
+	
+	//Validate the file / load tarball header into memory
+	tarFile = fopen(tarName, "rb")
+	
+	if(tarFile == NULL) return EXIT_FAILURE;
+	ent = readHeader(tarFile, &numFiles);
+
+	//Extract files stored in the data section of the tarball
+	for(i = 0; i < nunFiles; i++){
+		outFile = fopen(ent[i].name, "wb");
+	  copynFile(tFile, outFile, ent[i].size);
+		printf("[]%d]: Creando fichero %s, tamano %d Bytes...Ok\n", i, ent[i].name, nCop);	
+	}
+	
+	free(ent);
+	fclose(tarFile);
+	
+	return EXIT_SUCCESS;
 }
