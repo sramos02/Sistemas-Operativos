@@ -22,7 +22,7 @@ int copynFile(FILE * origin, FILE * destination, int nBytes) {
 
 	while((c = getc(origin)) != EOF){
 		ret = putc((unsigned char) c, destination);
-		else sum++;		
+		sum++;		
 	}	
   
   return sum;
@@ -71,7 +71,7 @@ stHeaderEntry* readHeader(FILE * tarFile, int *nFiles) {
 	stHeaderEntry * header = NULL;
 
 	if(fread(nFiles, sizeof(int), 1, tarFile) == 1) {
-		header = malloc(sizeof(stHeaderEntry * nFiles));
+		header = malloc(sizeof(stHeaderEntry) * nFiles);
 		for(int i = 0; i < nFiles; ++i){
 			header[i].name = loadstr(tarFile);
  			fread(header[i].size, sizeof(int), 1, tarFile);
@@ -109,30 +109,41 @@ int createTar(int nFiles, char *fileNames[], char tarName[]) {
 	//If the file exists then continue, else return error
 	tarFile = fopen(tarName, "w");
 	if (tarFile == NULL) return EXIT_FAILURE;
+	
+	stHeaderEntry * header = NULL;
+	header = malloc(sizeof(stHeaderEntry) * nFiles);
 
 	//Calc the room needed for the header
-	for(int i = 0; i < nFiles; ++i) sizeHeader += strlen(fileNames[i] + 1);
+	for(int i = 0; i < nFiles; ++i) sizeHeader += (strlen(fileNames[i]) + 1);
 
-		//Move the file's position indicator to the data section
-		fseek(tarFile,sizeHeader,SEEK_SET);
+	//Move the file's position indicator to the data section
+	fseek(tarFile,sizeHeader,SEEK_SET);
+	
+	//Dump the contest of the source files (one by one)
+	FILE * file = NULL;
+	char buff;
+	
+	for(int i = 0; i < nFiles; ++i){
+		file = fopen(fileNames[i]);
+		if (file == NULL) return EXIT_FAILURE;	
 		
-		//Dump the contest of the source files (one by one)
-		FILE * file = NULL;
-		char buff;
-		
-		for(int i = 0; i < nFiles; ++i){
-			file = fopen(fileNames[i]);
-			if (file == NULL) return EXIT_FAILURE;
-			
-			while(feof(file)== 0){
-				fread(buff,1,1,file);
-				fwrite(buff,1,1,tarFile);
-			}	
-			
+		header[i].name = malloc(strlen(fileNames[i] + 1);
+		header[i].name = fileNames[i] + '\0';
+		header[i].size = copynFile(file,tarFile,INT_MAX);
+
 		fclose(file);
-		}
 	}
 
+	fseek(tarFile,0,SEEK_SET);
+	fwrite(nFiles,4,1,tarFile);
+	for(int i = 0;i < nFiles; i++){
+		fwrite(header[i].name,strlen(header[i].name),1,tarFile);
+		fwrite(header.[i].size,4,1,tarFile);
+		free(header[i].name);
+	}
+	
+	for(int i = 0;i < nFiles; i++) free(header[i].name);	
+	free(header);
 	fclose(tarFile);
 	return EXIT_SUCCESS;
 }
