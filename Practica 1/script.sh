@@ -24,7 +24,7 @@ mkdir tmp && cd ./tmp
 	head -n10 /etc/passwd > file2.txt
 	head -c1024 /dev/urandom > file3.dat  #Posible error AQUI no he podido comprobar la creación de los ficheros
 
-	array = {file.txt, file2.txt, file3.dat}
+	array = (file1.txt file2.txt file3.dat)
 
 #Invocará el programa mytar que hemos desarrollado
 ../mytar -cf filetar.mtar ${array[@]} || { echo "Error creando mytar.\n"; exit 1; }
