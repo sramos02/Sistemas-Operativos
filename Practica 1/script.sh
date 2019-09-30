@@ -45,6 +45,6 @@ for i in "${array[@]}"; do
     diff "../$i" "$i" || exit 1
 done;
 
-cd ..
+cd ../..
 echo "Script terminado con exito (Correct)"
 exit 0
