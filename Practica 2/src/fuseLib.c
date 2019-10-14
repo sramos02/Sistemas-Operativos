@@ -1,5 +1,4 @@
 #include "fuseLib.h"
-
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -474,14 +473,45 @@ static int my_truncate(const char *path, off_t size)
     return 0;
 }
 
+static int my_unlink(const char * path){
+	int pos;	
+  
+	//Look for i-node by name(argument)
+  pos = finFileByName(myFileSystem, (char *)path + 1);
+	if(pos == -1) return -1;		
+
+	//Look for number i-node
+	int nodo = myFileSystem.directory.files[pos].nodeIdx;
+
+	//resize node
+  resizeNode(nodo, 0);
+  
+	//modify myfilesystem    
+	 //update directory & nodes
+    myFileSystem.directory.files[pos].freeNode = true;
+    updateDirectory();
+   //free memory
+
+	//update bitman & spuperblock
+    updateBitmap();
+    
+}
+
+
+static int my_read(const char *fich1, char *fich2, size_t st, off_t ot, struct fuse_file_info *myFS_info){
+
+}
+
+
 
 struct fuse_operations myFS_operations = {
     .getattr	= my_getattr,					// Obtain attributes from a file
     .readdir	= my_readdir,					// Read directory entries
     .truncate	= my_truncate,					// Modify the size of a file
-    .open		= my_open,						// Oeen a file
-    .write		= my_write,						// Write data into a file already opened
+    .open	= my_open,					// Open a file
+    .write	= my_write,					// Write data into a file already opened
     .release	= my_release,					// Close an opened file
-    .mknod		= my_mknod,						// Create a new file
+    .mknod	= my_mknod,					// Create a new file
+    .link 	= my_unlink,
+    .read 	= my_read
 };
-
