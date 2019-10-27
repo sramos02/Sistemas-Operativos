@@ -474,19 +474,19 @@ static int my_truncate(const char *path, off_t size)
 }
 
 static int my_unlink(const char * path){
-	int pos;	
-  
+	int pos;
+
 	//Look for i-node by name(argument)
   pos = finFileByName(myFileSystem, (char *)path + 1);
-	if(pos == -1) return -1;		
+	if(pos == -1) return -1;
 
 	//Look for number i-node
 	int nodo = myFileSystem.directory.files[pos].nodeIdx;
 
 	//resize node
   resizeNode(nodo, 0);
-  
-	//modify myfilesystem    
+
+	//modify myfilesystem
 	 //update directory & nodes
     myFileSystem.directory.files[pos].freeNode = true;
     updateDirectory();
@@ -494,12 +494,46 @@ static int my_unlink(const char * path){
 
 	//update bitman & spuperblock
     updateBitmap();
-    
+
 }
 
 
-static int my_read(const char *fich1, char *fich2, size_t st, off_t ot, struct fuse_file_info *myFS_info){
+static int my_read(const char *path,  char *buf, size_t size, off_t offset, struct fuse_file_info *fi){
+  int idxDir;
+  int i;
+  int currentBlock, offBlock;
 
+  	NodeStruct *node = myFileSystem.nodes[fi->fh];
+  	int bytes2Read = size, totalRead= 0;;
+  	char buffer[BLOCK_SIZE_BYTES];
+
+  	fprintf(stderr, "--->>>my_read: path %s, size %zu\n", path, size);
+
+  	if((idxDir = findFileByName(&myFileSystem, (char *)path + 1)) == -1) {
+  			return -ENOENT;
+  		}
+
+      while(bytes2Read) {
+
+
+          currentBlock = node->blocks[offset / BLOCK_SIZE_BYTES];
+          offBlock = offset % BLOCK_SIZE_BYTES;
+
+          if( readBlock(&myFileSystem, currentBlock, &buffer)==-1 ) {
+              fprintf(stderr,"Error reading in my_read\n");
+              return -EIO;
+          }
+
+          for(i = offBlock; (i < BLOCK_SIZE_BYTES) && (totalRead < size); i++) {
+              buf[totalRead++] = buffer[i];
+          }
+
+          bytes2Read -= (i - offBlock);
+
+
+      }
+
+  	return size;
 }
 
 
