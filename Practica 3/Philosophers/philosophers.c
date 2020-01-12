@@ -8,7 +8,6 @@
 pthread_t philosophers[NR_PHILOSOPHERS];
 pthread_mutex_t forks[NR_PHILOSOPHERS];
 
-
 void init()
 {
     int i;
@@ -43,17 +42,27 @@ void* philosopher(void* i)
     int nPhilosopher = (int)i;
     int right = nPhilosopher;
     int left = (nPhilosopher - 1 == -1) ? NR_PHILOSOPHERS - 1 : (nPhilosopher - 1);
+    
     while(1)
     {
         
         think(nPhilosopher);
         
         /// TRY TO GRAB BOTH FORKS (right and left)
-
+        if(nPhilosopher != 0){
+            lock(forks[right]);
+            lock(forks[left]);
+        }
+        else{
+           lock(forks[left]);
+           lock(forks[right]);
+        }
+        
         eat(nPhilosopher);
-        
         // PUT FORKS BACK ON THE TABLE
-        
+        unlock(forks[left]);
+        unlock(forks[right]);
+
         toSleep(nPhilosopher);
    }
 
