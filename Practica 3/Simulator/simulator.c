@@ -113,9 +113,9 @@ void* thread_usuario(void* arg) {
 
 int main(int argc, char*argv[]) {
 
-    if(argc != 3) prinf("Usage: ./simulator <bus_capacity> <user_count> <number_of_stops>\n");
+    if(argc != 4) printf("Usage: ./simulator <bus_capacity> <user_count> <number_of_stops>\n");
     else{
-        thread_autobus(); // Crear el thread Autobus
+        thread_autobus((void*) argv); // Crear el thread Autobus
         for (int i = 0; i < USUARIOS; i++) thread_usuario(i);
         pthread_join(thread_autobus, NULL); // Esperar terminación de los hilos
     }
