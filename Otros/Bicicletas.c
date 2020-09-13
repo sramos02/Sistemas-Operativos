@@ -45,10 +45,8 @@ void salir_del_puente(int sentido){
 	(sentido == 0)?printf("Sale derecha\n"):printf("Sale izquierda\n");
 
 	//Sale del carril y abre las condiciones si es que toca
-	if(num_ciclistas[sentido] == MAX_CICLISTAS_CARRIL)
-		pthread_cond_signal(&carril_cerrado[contrario]);
-	else if ((num_ciclistas[sentido] == 0) && (num_ciclistas[contrario] == MAX_CICLISTAS_CARRIL))
-		pthread_cond_signal(&carril_cerrado[contrario]);		
+	if(num_ciclistas[sentido] == MAX_CICLISTAS_CARRIL || ((num_ciclistas[sentido] == 0) && (num_ciclistas[contrario] == MAX_CICLISTAS_CARRIL)))
+		pthread_cond_broadcast(&carril_cerrado[contrario]);
 
 	pthread_mutex_unlock(&acceso);
 }
@@ -72,17 +70,18 @@ int main(int argc, char*argv[]) {
 		int r = rand() % NUM_CARRILES;
 		pthread_create(&ciclistas[i], NULL, ciclista, r);
 	}
-	printf("!!!Todos los ciclistas han entrado con exito!!!\n");	
 		
 	//Esepera la ejecucion de todos los hilos
 	for(int i = 0; i < NUM_CICLISTAS; i++) {
+
 		pthread_join(ciclistas[i], NULL);
-		printf("El ciclista %d ha salido con exito\n", i);	
+		printf("El ciclista %d ha salido con exito!!!\n", i+1);	
 	}
-	printf("!!!Fin!!!\n");
 	
+	
+	printf("!!!Fin!!!\n");
 	//Destruye las condiciones y mutex
-	for(int i = 0; i < NUM_CARRILES; i++) pthread_cond_destroy(&carril_cerrado[i]);
+	//for(int i = 0; i < NUM_CARRILES; i++) pthread_cond_destroy(&carril_cerrado[i]);
 	pthread_mutex_destroy(&acceso);
 
     return 0;
